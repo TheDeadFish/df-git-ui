@@ -1,5 +1,6 @@
 #include <stdshit.h>
 #include <win32hlp.h>
+#include <resize.h>
 #include "resource.h"
 #include "git-info.h"
 #include "stuff.h"
@@ -7,6 +8,7 @@
 const char progName[] = "df-git-ui";
 
 GitInfo g_gitInfo;
+static WndResize s_resize;
 
 void repo_reset(HWND hwnd)
 {
@@ -73,6 +75,12 @@ void repo_load(HWND hwnd, char* name)
 
 void mainDlgInit(HWND hwnd)
 {
+	s_resize.init(hwnd);
+	s_resize.add(hwnd, IDC_PATH, HOR_BOTH);
+	s_resize.add(hwnd, IDC_OPEN, HOR_RIGH);
+	s_resize.add(hwnd, IDC_BRA, HOR_BOTH);
+	s_resize.add(hwnd, IDC_CMT, HOR_BOTH);
+
 	repo_load(hwnd, NULL);
 }
 
@@ -81,6 +89,8 @@ BOOL CALLBACK mainDlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	DLGMSG_SWITCH(
 		ON_MESSAGE(WM_INITDIALOG, mainDlgInit(hwnd))
 		ON_MESSAGE(WM_CLOSE, EndDialog(hwnd, 0))
+		ON_MESSAGE(WM_SIZE, s_resize.resize(hwnd, wParam, lParam))		
+		
 		CASE_COMMAND(
 			ON_CONTROL(CBN_SELCHANGE, IDC_BRA, select_branch(hwnd))
 		
