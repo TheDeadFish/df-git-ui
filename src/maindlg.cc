@@ -50,18 +50,15 @@ void select_branch(HWND hwnd)
 	select_commit(hwnd);
 }
 
-void repo_load(HWND hwnd, cch* name)
+void repo_load(HWND hwnd, char* name)
 {
 	repo_reset(hwnd);
-	if(name && !setCurrentDirectory(name))
-		contError(hwnd, "failed to set directory");
-	int ec = g_gitInfo.get_repo();
+	if(!name) name = getCurrentDirectory();
+	int ec = g_gitInfo.get_repo(name);
 	if(ec) { contError(hwnd, "git query failed: %d\n", ec);
 		return; }
 		
-	setDlgItemText(hwnd, IDC_PATH,
-		xstr(getCurrentDirectory()));
-		
+	setDlgItemText(hwnd, IDC_PATH, g_gitInfo.dir);
 	{ Bstr str;
 	for(auto& x : g_gitInfo.branch) {
 		str.strcpy(x.name.data);

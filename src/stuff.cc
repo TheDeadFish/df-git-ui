@@ -2,34 +2,67 @@
 #include "stuff.h"
 #include <time.h>
 
-FileStrRead::FileStrRead(FILE* fp_, int size) : fp(fp_)
+SHITCALL DWORD winPopen(HANDLE* hReadPipe, cch* dir, cch* cmd)
 {
-	this->fp = fp;
-	if(setvbuf(fp, 0, _IOFBF, size))
-		errorAlloc();		
+	// create the pipe	
+	HANDLE hWritePipe;
+	SECURITY_ATTRIBUTES sa = {sizeof(sa), 0, TRUE}; 
+	if(!CreatePipe(hReadPipe, &hWritePipe, &sa, 0))
+		return GetLastError();
+		
+	// create the process
+	STARTUPINFOA si = {sizeof(si)};
+	si.hStdOutput = hWritePipe;
+	si.dwFlags = STARTF_USESTDHANDLES;
+	PROCESS_INFORMATION pi;
+	BOOL result = createProcess(NULL, cmd, NULL, 
+		NULL, TRUE, 0, NULL, dir, &si, &pi);
+		
+	// cleanup & error handling
+	CloseHandle(hWritePipe);
+	if(!result) { CloseHandle(*hReadPipe);
+		return GetLastError(); }
+	CloseHandle(pi.hProcess); return 0;
+}
+
+FileStrRead::FileStrRead(int size)
+{
+	hFile = NULL;
+	base = xmalloc(size); limit = base+size;
+	pos = base; end = base; errCode = 0;
 }
 
 int FileStrRead::error()
 {
-	IFRET(ferror(fp));
-	return feof(fp) ? 0 : -1;
+	IFRET(errCode);
+	if(end-pos) return -1;
+	return 0;
 }
 
 void FileStrRead::next()
 {
-	FILE* fp = this->fp;
-	fp->_base = memcpyX(fp->_base, fp->_ptr, fp->_cnt);
-	int cnt = fp->_cnt; fp->_bufsiz -= cnt;
-	int ch = _filbuf(fp); fp->_base -= cnt; fp->_bufsiz += cnt;
-	if(ch >= 0) cnt++; fp->_ptr -= cnt; fp->_cnt += cnt;
+	// shuffle remainder
+	DWORD size = end-pos;
+	memcpy(base, pos, size);
+	pos = base; end = pos+size;
+	
+	// read from file
+	for(;size = limit-end; end += size) {
+		if(!ReadFile(hFile, end, size, &size, 0)) {
+			errCode = GetLastError();
+			if(errCode == ERROR_HANDLE_EOF) errCode = 0;
+			if(errCode == ERROR_BROKEN_PIPE) errCode = 0;
+			break;
+		}
+	}
 }
 
 char* FileStrRead::get_(char x)
 {
-	int cnt = fp->_cnt; char* ptr = fp->_ptr;
-	while(--cnt >= 0) { char ch = *ptr; ptr++;
-		if(ch==x) { ptr[-1] = 0; fp->_cnt = cnt;
-			return release(fp->_ptr, ptr); }
+	char* ptr = this->pos;
+	while(ptr < end) { char ch = *ptr; ptr++;
+		if(ch==x) { ptr[-1] = 0; 
+			return release(this->pos, ptr); }
 	} return NULL;
 }
 

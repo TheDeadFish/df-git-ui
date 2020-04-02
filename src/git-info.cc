@@ -57,9 +57,8 @@ int GitInfo::parse_commit(cch* str)
 
 int GitInfo::get_commits(void)
 {
-	FILE* fp_ = popen("git rev-list --all --header", "r");
-	if(!fp_) return errno;
-	FileStrRead fp(fp_);
+	FileStrRead fp;
+	IFRET(fp.popen(dir, "git rev-list --all --header"));
 	while(cch* str = fp.get()) {
 		IFRET(parse_commit(str)); }
 	return fp.error();
@@ -110,12 +109,10 @@ cch* GitInfo::person_add(cch* str)
 
 int GitInfo::get_branches()
 {
-	FILE* fp_ = popen("git branch -a -vv --no-abbrev", "r");
-	if(!fp_) return errno;
-	FileStrRead fp(fp_);
+	FileStrRead fp;
+	IFRET(fp.popen(dir, "git branch -a -vv --no-abbrev"));
 	
 	branch.Clear();
-	
 	while(char* str = fp.getLine()) 
 	{
 		// split branch info
@@ -154,9 +151,10 @@ int GitInfo::get_branches()
 	return 0;
 }
 
-int GitInfo::get_repo()
+int GitInfo::get_repo(char* dir)
 {
 	pRst(this);
+	this->dir.init(dir);
 	IFRET(get_branches());
 	IFRET(get_commits());
 	return 0;

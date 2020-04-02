@@ -60,7 +60,7 @@ struct GitInfo
 	int parse_commit(cch* str);
 	
 	int get_branches();
-	int get_repo();
+	int get_repo(char* dir);
 	
 	
 	// branch list
@@ -74,8 +74,7 @@ struct GitInfo
 	Commit* branch_commit(int i);
 	
 	static char* messageFix(char* str);
-	
-	
+	xstr dir;
 	
 private:
 	enum { HASH_SIZE=1024*1024 };
@@ -83,7 +82,4 @@ private:
 	cch* parse_time(cch* str, TimeInfo& ti);
 	cch* person_add(cch* str); u32 person_hint;
 	Branch* branch_remote(cch* name);
-	
-	
-	
 };

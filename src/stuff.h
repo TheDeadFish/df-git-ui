@@ -15,16 +15,25 @@ void add_uniqueP(T& xa, U* cmt)
 	xa.push_back(cmt);
 }
 
-struct FileStrRead {
-	FILE* fp;
-	FileStrRead(FILE* fp, int size=65536);
+SHITCALL DWORD winPopen(HANDLE* hReadPipe, cch* dir, cch* cmd);
+
+struct FileStrRead 
+{
+	FileStrRead(int size=65536);	
+	DWORD popen(cch* dir, cch* cmd) {
+		return winPopen(&hFile, dir, cmd); }
 	
-	~FileStrRead() { fclose(fp); }
+	~FileStrRead() { CloseHandle(hFile); }
 	char* get();
 	char* getLine();
 	int error();
 	
 private:
+	HANDLE hFile; 
+	char *base, *limit;
+	char *pos, *end;
+	DWORD errCode;
+
 	char* get_(char ch);
 	void next();
 };
