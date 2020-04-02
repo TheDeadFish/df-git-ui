@@ -45,3 +45,10 @@ char* FileStrRead::getLine()
 	next(); 
 	return get_('\n');	
 }
+
+SHITCALL cstr getCurrentDirectory(void)
+{
+	WCHAR buff[MAX_PATH]; buff[0] = 0;
+	GetCurrentDirectory(MAX_PATH, buff);
+	return utf816_dup(buff);
+}

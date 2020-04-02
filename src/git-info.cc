@@ -2,9 +2,6 @@
 #include "git-info.h"
 #include "stuff.h"
 
-const char progName[] = "test";
-
-
 cch* GitInfo::parse_time(cch* str, TimeInfo& ti)
 {
 	// get person info
@@ -155,6 +152,7 @@ int GitInfo::get_branches()
 
 int GitInfo::get_repo()
 {
+	pRst(this);
 	IFRET(get_branches());
 	IFRET(get_commits());
 	return 0;
@@ -173,17 +171,3 @@ GitInfo::Branch* GitInfo::branch_remote(cch* name)
 GitInfo::Branch::~Branch() {}
 cch* GitInfo::Branch::isRemote() {
 	return strScmp(name, "remotes/"); }
-
-int main()
-{
-	GitInfo gi;
-
-	int ec = gi.get_repo();
-	printf("%d\n", ec);
-	
-	for(auto& x : gi.branch)
-		printf("%s, %s\n", x.name.data, x.remote.data);
-	
-
-
-}

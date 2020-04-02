@@ -32,3 +32,5 @@ private:
 static char* skip_space(char* str) {
 	if(str) while(*str == ' ') str++;
 	return str; }
+
+SHITCALL cstr getCurrentDirectory(void);

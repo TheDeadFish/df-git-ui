@@ -4,6 +4,7 @@
 struct GitInfo
 {
 	GitInfo();
+	void free() { pRst(this); }
 
 	struct TimeInfo { u16 person; 
 		u16 zone; u32 time; };
