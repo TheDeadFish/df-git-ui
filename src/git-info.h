@@ -15,6 +15,8 @@ struct GitInfo
 		TimeInfo authur, committer;
 		xArray<Commit*> parent;
 		xArray<Commit*> child;
+		
+		Commit* Parent() { return parent.len ? *parent : 0; }
 
 		Commit(Sha1& h) { ZINIT; hash=h; }
 		bool operator==(const Commit& That) const {
@@ -47,7 +49,7 @@ struct GitInfo
 	
 	DEF_RETPAIR(commit_find_t, Commit*, item, bool, found);
 	commit_find_t commit_find_(Sha1& hash, bool create);
-	Commit& commit_find(Sha1& hash) { return *commit_find_(hash, 0); }
+	Commit* commit_find(Sha1& hash) { return commit_find_(hash, 0); }
 	Commit& commit_create(Sha1& hash) { return *commit_find_(hash, 1); }
 	
 	
@@ -69,6 +71,11 @@ struct GitInfo
 	};
 
 	xArray<Branch> branch;
+	Commit* branch_commit(int i);
+	
+	static char* messageFix(char* str);
+	
+	
 	
 private:
 	enum { HASH_SIZE=1024*1024 };

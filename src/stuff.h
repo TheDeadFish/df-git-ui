@@ -29,8 +29,13 @@ private:
 	void next();
 };
 
-static char* skip_space(char* str) {
+
+TMPL(T)
+static T* skip_space(T* str) {
 	if(str) while(*str == ' ') str++;
 	return str; }
 
 SHITCALL cstr getCurrentDirectory(void);
+
+SHITCALL int fmtTime(char* str, u32 time);
+

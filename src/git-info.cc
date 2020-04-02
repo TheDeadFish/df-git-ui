@@ -46,8 +46,12 @@ int GitInfo::parse_commit(cch* str)
 			add_uniqueP(parent.child, &cmt))
 		STR_CHK("\nauthor ", PARSE_TIME(cmt.authur))
 		STR_CHK("\ncommitter ",	PARSE_TIME(cmt.committer))
-		STR_CHK("\n\n", cmt.message.xcopy(str); return 0)
-		else { return -2; }
+		STR_CHK("\ngpgsig ", 
+			str = strstr(str, "-----END PGP SIGNATURE-----");
+			if(!str) return 2; str += 27; )
+		STR_CHK("\n\n", str = skip_space(str);
+			cmt.message.xcopy(str); return 0)
+		else { return -3; }
 	}
 }
 
@@ -171,3 +175,25 @@ GitInfo::Branch* GitInfo::branch_remote(cch* name)
 GitInfo::Branch::~Branch() {}
 cch* GitInfo::Branch::isRemote() {
 	return strScmp(name, "remotes/"); }
+
+GitInfo::Commit* GitInfo::branch_commit(int i) {
+	return commit_find(branch[i].hash); }
+	
+char* GitInfo::messageFix(char* str)
+{
+	char* wrPos = str;
+NEXT_LINE:
+	str = skip_space(str);
+	for(; ; wrPos++) {
+		char ch = *str; str++;
+		if(!(*wrPos = ch)) break;
+		if(ch == '\n') {
+			if(*str) { 
+				RW(wrPos) = ' ;'; 
+				wrPos += 2; }
+			goto NEXT_LINE;
+		}
+	}
+
+	return wrPos;
+}

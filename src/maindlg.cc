@@ -16,13 +16,38 @@ void repo_reset(HWND hwnd)
 	dlgCombo_reset(hwnd, IDC_CMT);
 }
 
+void select_commit(HWND hwnd)
+{
+
+
+
+}
+
+
 void select_branch(HWND hwnd)
 {
+	GitInfo::Commit* prevCmt = Void(
+		dlgCombo_getData(hwnd, IDC_CMT, 
+		dlgCombo_getSel(hwnd, IDC_CMT)));
+	int prevSel = 0;
+
+	dlgCombo_reset(hwnd, IDC_CMT);
+	int sel = dlgCombo_getSel(hwnd, IDC_BRA);
+	auto* pos = g_gitInfo.branch_commit(sel);
+
+
+	{ Bstr str; str.xreserve(80);
+	while(pos) {
+		str.slen = fmtTime(str, pos->committer.time);
+		str.fmtcat("; %s", pos->message.data); 
+		GitInfo::messageFix(str);
+		int i = dlgCombo_addStr(hwnd, IDC_CMT, str, (LPARAM)pos);
+		if(pos == prevCmt) prevSel = i;
+		pos = pos->Parent();
+	}}
 	
-
-
-
-
+	dlgCombo_setSel(hwnd, IDC_CMT, prevSel);
+	select_commit(hwnd);
 }
 
 void repo_load(HWND hwnd, cch* name)
@@ -59,8 +84,13 @@ BOOL CALLBACK mainDlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	DLGMSG_SWITCH(
 		ON_MESSAGE(WM_INITDIALOG, mainDlgInit(hwnd))
 		ON_MESSAGE(WM_CLOSE, EndDialog(hwnd, 0))
+		CASE_COMMAND(
+			ON_CONTROL(CBN_SELCHANGE, IDC_BRA, select_branch(hwnd))
 		
-	  //CASE_COMMAND(
+		
+		,)
+		
+	  
 		  /*ON_COMMAND(IDC_SPOIL, spoilChg(hwnd))
 	    ON_COMMAND(IDC_COPY, clipCopy(hwnd))
 	    ON_COMMAND(IDC_PASTE, clipPaste(hwnd))

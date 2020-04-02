@@ -1,5 +1,6 @@
 #include <stdshit.h>
 #include "stuff.h"
+#include <time.h>
 
 FileStrRead::FileStrRead(FILE* fp_, int size) : fp(fp_)
 {
@@ -51,4 +52,12 @@ SHITCALL cstr getCurrentDirectory(void)
 	WCHAR buff[MAX_PATH]; buff[0] = 0;
 	GetCurrentDirectory(MAX_PATH, buff);
 	return utf816_dup(buff);
+}
+
+
+int fmtTime(char* str, u32 time)
+{
+	time_t pt = time;
+	return strftime(str, 80, 
+		"%Y-%m-%d %H:%M", localtime(&pt));
 }
